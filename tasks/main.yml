@@ -1,0 +1,31 @@
+---
+
+- name: Get current AWX job info
+  ansible.builtin.set_fact:
+    curent_job_info: "{{ query('awx.awx.controller_api', 'jobs', query_params={'id': awx_job_id}) | first }}"
+
+- name: List yaml files to look for playbooks
+  ansible.builtin.find:
+    paths:
+      - "{{ awx_sync_job_templates_playbooks_path }}"
+    patterns: '*.yml,*.yaml'
+    excludes:
+      - requirements.yml
+      - requirements.yaml
+    recurse: false
+  register: yaml_files
+
+- name: Process Job Templates from playbooks
+  vars:
+    yaml_content: "{{ lookup('file', playbook_path) | regex_replace('!vault', '') | from_yaml | default('') }}"
+  ansible.builtin.include_tasks:
+    file: update-job-template.yml
+  with_items: "{{ yaml_files.files | map(attribute='path') }}"
+  loop_control:
+    loop_var: playbook_path
+  when:
+    - yaml_content | type_debug == 'list'
+    - yaml_content | map(attribute='hosts') | length > 0
+    - yaml_content[0].vars is defined
+    - yaml_content[0].vars.awx_job_template_spec is defined
+    - awx_sync_job_templates_manage_self or curent_job_info.playbook != playbook_path | regex_replace('^' + awx_sync_job_templates_project_root + '/','')

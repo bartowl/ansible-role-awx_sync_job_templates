@@ -1,0 +1,28 @@
+---
+
+- name: Prepare parameters
+  ansible.builtin.set_fact:
+    awx_job_template_spec: "{{ yaml_content[0].vars.awx_job_template_spec }}"
+    awx_job_template_access: "{{ yaml_content[0].vars.awx_job_template_access | default([]) }}"
+
+- name: Create/update Job Template in AWX
+  awx.awx.job_template:
+    name: "{{ awx_job_template_spec.name }}"
+    playbook: "{{ playbook_path | regex_replace('^' + awx_sync_job_templates_project_root + '/', '') }}"  # relative to awx_sync_job_templates_project_root
+    project: "{{ awx_job_template_spec.project | default(curent_job_info.project) }}"
+    inventory: "{{ awx_job_template_spec.inventory | default(curent_job_info.inventory) }}"
+    organization: "{{ awx_job_template_spec.organization | default(curent_job_info.organization) }}"
+    state: "{{ awx_job_template_spec.state | default('present') }}"
+  args: "{{ awx_job_template_spec }}"  # to include all other attributes from vars.awx_job_template_spec
+  register: job_template_object
+  when: awx_job_template_spec.name is defined
+
+- name: Assign Permissions for Job Template
+  awx.awx.role:
+    role: "{{ item.role | mandatory('role must be specified') }}"
+    state: "{{ item.state | default('present') }}"
+    teams: "{{ item.teams | default(omit) }}"
+    users: "{{ item.users | default(omit) }}"
+    job_templates:
+      - "{{ job_template_object.id }}"
+  with_items: "{{ awx_job_template_access }}"

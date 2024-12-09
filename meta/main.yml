@@ -1,0 +1,47 @@
+---
+# @meta author: [bartowl](nmailto\:github@bartowl.eu)
+# @meta description: >
+# Role to create and maintain AWX Job Templates based on metadata found in playbooks.
+# It can also assign permissions for created Job Templates. It works for playbooks, whoose first Play
+# contains one of the 2 predefined variables: `awx_job_template_spec`, `awx_job_template_access`.
+# @end
+
+galaxy_info:
+  role_name: awx_sync_job_templates
+  author: bartowl
+  description: Sync AWX Job Templates with playbook metadata
+  license: "GPL-3.0-or-later"
+  min_ansible_version: "2.10"
+  platforms:
+    - name: GenericUNIX
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: opensuse
+      versions:
+        - all
+    - name: GenericBSD
+      versions:
+        - all
+    - name: FreeBSD
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: SLES
+      versions:
+        - all
+    - name: GenericLinux
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - awx
+
+dependencies:
+  - awx.awx

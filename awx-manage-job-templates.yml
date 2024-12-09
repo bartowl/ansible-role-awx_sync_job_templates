@@ -1,0 +1,24 @@
+---
+# This Playbook uses awx_sync_job_templates and `admin` API Credentials to synchronize all
+# administrative playbooks with corresponding AWX Job Templates. Needs to be called with Custom Credential
+# allowing access to AWX API:
+# ```
+# fields:
+#   - id: oauth_token
+#     type: string
+#     label: API Token
+#     secret: true
+# required:
+#   - oauth_token
+# ```
+# and Injector configuration:
+# ```
+# env:
+#   CONTROLLER_HOST: http://awx-service-name  # please replace with your k8s service name
+#   CONTROLLER_OAUTH_TOKEN: '{{ oauth_token }}'
+# ```
+- name: Sync all Playbooks with AWX Job Templates
+  hosts: localhost
+  become: false
+  roles:
+    - awx_sync_job_templates
